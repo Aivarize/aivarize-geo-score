@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aivarize-geo-score"
+version = "1.0.0"
+description = "GEO Score — composite scoring framework for Generative Engine Optimization"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    {name = "Aivarize", email = "hello@aivarize.com"},
+]
+keywords = ["geo", "seo", "ai-search", "scoring", "generative-engine-optimization"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+
+[project.urls]
+Homepage = "https://github.com/Aivarize/aivarize-geo-score"
+Documentation = "https://aivarize.com/geo-scoring"
+Repository = "https://github.com/Aivarize/aivarize-geo-score"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+aivarize_geo_score = ["data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "--tb=short -q"
+
+[tool.coverage.run]
+source = ["src/aivarize_geo_score"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+fail_under = 90
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "pytest-cov"]
