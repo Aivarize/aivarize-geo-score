@@ -1,0 +1,19 @@
+{
+    "metadata": {
+        "version": "3.2",
+        "source": "synthetic",
+        "note": "Initial percentiles are synthetic estimates — will calibrate with real audit data"
+    },
+    "general": {"p10": 25, "p25": 35, "p50": 50, "p75": 65, "p90": 80},
+    "local": {"p10": 20, "p25": 30, "p50": 45, "p75": 60, "p90": 75},
+    "ecommerce": {"p10": 22, "p25": 32, "p50": 48, "p75": 63, "p90": 78},
+    "saas": {"p10": 28, "p25": 38, "p50": 52, "p75": 68, "p90": 82},
+    "publisher": {"p10": 30, "p25": 40, "p50": 55, "p75": 70, "p90": 85},
+    "healthcare": {"p10": 25, "p25": 35, "p50": 50, "p75": 65, "p90": 80},
+    "finance": {"p10": 25, "p25": 35, "p50": 50, "p75": 65, "p90": 80},
+    "legal": {"p10": 28, "p25": 38, "p50": 52, "p75": 68, "p90": 82},
+    "professional_services": {"p10": 22, "p25": 32, "p50": 47, "p75": 62, "p90": 77},
+    "education": {"p10": 20, "p25": 30, "p50": 45, "p75": 60, "p90": 78},
+    "hospitality": {"p10": 20, "p25": 30, "p50": 45, "p75": 60, "p90": 75},
+    "real_estate": {"p10": 22, "p25": 32, "p50": 48, "p75": 63, "p90": 78}
+}
