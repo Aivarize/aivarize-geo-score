@@ -78,13 +78,13 @@ from aivarize_geo_score import detect_industry
 
 page_data = {
     "url": "https://example.com",
-    "schema_types": ["LocalBusiness", "Restaurant"],
+    "structured_data": [{"@type": "LocalBusiness"}, {"@type": "Restaurant"}],
     "title": "Best Pizza in Brooklyn",
 }
 
 result = detect_industry(page_data)
 print(result["industry"])    # "local"
-print(result["confidence"])  # 0.85
+print(result["confidence"])  # 0.5
 ```
 
 ## Benchmarks & Percentiles
