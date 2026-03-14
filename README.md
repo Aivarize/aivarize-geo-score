@@ -99,32 +99,12 @@ context = get_benchmark_context(72, industry="saas")
 # "Score 72 = 68th percentile for SaaS / B2B Tech"
 ```
 
-## Legacy Score Migration
-
-Automatically migrate scores from older GEO scoring versions (v1-v3) to v4.0:
-
-```python
-from aivarize_geo_score import auto_migrate
-
-# v3 7-dimension input
-old_scores = {
-    "ai_citability": 60, "ai_discoverability": 50,
-    "brand_entity": 70, "content_quality": 65,
-    "technical_foundation": 75, "structured_data": 55,
-    "content_richness": 45,
-}
-
-migrated = auto_migrate(old_scores)
-# Returns 5-dimension v4.0 format
-```
-
 ## API Reference
 
 ### Core Functions
 
 - **`calculate_geo_score(scores, industry=None, confidence_data=None)`** — Calculate weighted composite GEO score. Returns dict with `geo_score`, `label`, `weighted`, `industry`, `scoring_version`.
 - **`get_score_label(score, industry=None)`** — Get the label (Excellent/Good/Fair/Poor/Critical) for a score.
-- **`auto_migrate(scores)`** — Auto-detect and migrate v1/v2/v3 scores to v4.0 format.
 - **`calculate_confidence(confidence_data)`** — Calculate confidence level (high/medium/low) for an audit.
 
 ### Benchmarks
