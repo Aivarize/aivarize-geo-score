@@ -1391,3 +1391,51 @@ class TestIndustryAliases:
         """Both finance and legal profiles exist separately."""
         assert "finance" in INDUSTRY_PROFILES
         assert "legal" in INDUSTRY_PROFILES
+
+
+class TestInputValidation:
+    """Test input validation for malformed scores."""
+
+    def test_nan_score_raises_value_error(self):
+        scores = {
+            "ai_citability": float("nan"),
+            "ai_discoverability": 50,
+            "brand_entity": 50,
+            "content_quality": 50,
+            "technical_foundation": 50,
+        }
+        with pytest.raises(ValueError, match="NaN"):
+            calculate_geo_score(scores)
+
+    def test_none_score_raises_type_error(self):
+        scores = {
+            "ai_citability": None,
+            "ai_discoverability": 50,
+            "brand_entity": 50,
+            "content_quality": 50,
+            "technical_foundation": 50,
+        }
+        with pytest.raises(TypeError, match="numeric"):
+            calculate_geo_score(scores)
+
+    def test_string_score_raises_type_error(self):
+        scores = {
+            "ai_citability": "fifty",
+            "ai_discoverability": 50,
+            "brand_entity": 50,
+            "content_quality": 50,
+            "technical_foundation": 50,
+        }
+        with pytest.raises(TypeError, match="numeric"):
+            calculate_geo_score(scores)
+
+    def test_inf_score_is_clamped(self):
+        scores = {
+            "ai_citability": float("inf"),
+            "ai_discoverability": 50,
+            "brand_entity": 50,
+            "content_quality": 50,
+            "technical_foundation": 50,
+        }
+        result = calculate_geo_score(scores)
+        assert result["geo_score"] <= 100
