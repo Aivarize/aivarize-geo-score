@@ -54,6 +54,18 @@ The GEO Score is a weighted composite across 5 dimensions, calibrated from 230+ 
 
 Note: Industry-specific thresholds may differ (e.g., local businesses: 70+ = Excellent).
 
+### What Each Dimension Measures
+
+**Brand & Entity (30%)** — Does the brand exist as a recognized entity? Scores platform presence (YouTube, Reddit, Wikipedia, LinkedIn, G2, X, Crunchbase, GitHub), Wikidata/Knowledge Panel signals, and on-page Organization schema. Strongest measured correlation with AI citation rates.
+
+**Content Quality (24%)** — Sub-scores: Freshness (30%), Expertise (20%), Trustworthiness (18%), Structure (12%), Non-Promotional Tone (8%), Content Richness (7%), AI Content Risk (5%). Includes author entity signals and content freshness decay.
+
+**AI Citability (23%)** — Can AI models extract and quote passages? Sub-scores: Passage Citability (65%), Heading Structure (15%), Content Depth (10%), Front-Loading (10%). Evaluates answer-first structure, factual density, and self-contained quotable blocks.
+
+**AI Discoverability (13%)** — Can AI crawlers find and parse the content? Sub-scores: SSR/Rendering (35%), Crawler Access (35%), Schema Quality (15%), Sitemap/Indexability (15%), plus llms.txt bonus (+3). Checks access for GPTBot, ClaudeBot, PerplexityBot, Google-Extended, OAI-SearchBot, ChatGPT-User.
+
+**Technical Foundation (10%)** — Floor constraint: severe failures cap citation potential. Sub-scores: Crawlability (35%), SSR (25%), Internal Linking (20%), Web Quality (10%), Page Speed (10%).
+
 ## Industry-Aware Scoring
 
 Pass an `industry` parameter to use industry-specific weight profiles and label thresholds:
@@ -68,6 +80,23 @@ print(SUPPORTED_INDUSTRIES)
 
 result = calculate_geo_score(scores, industry="healthcare")
 ```
+
+### Industry Weight Matrix
+
+| Industry | Brand | Content | Citability | Discoverability | Technical |
+|----------|-------|---------|------------|-----------------|-----------|
+| **General** | 30% | 24% | 23% | 13% | 10% |
+| Local | 30% | 20% | 12% | 15% | 23% |
+| E-commerce | 15% | 22% | 18% | 15% | 30% |
+| SaaS | 25% | 24% | 25% | 13% | 13% |
+| Publisher | 25% | 28% | 25% | 12% | 10% |
+| Healthcare | 30% | 30% | 15% | 13% | 12% |
+| Finance | 28% | 32% | 15% | 13% | 12% |
+| Legal | 25% | 30% | 18% | 12% | 15% |
+| Professional Services | 30% | 30% | 15% | 10% | 15% |
+| Education | 15% | 35% | 23% | 15% | 12% |
+| Hospitality | 32% | 25% | 18% | 13% | 12% |
+| Real Estate | 35% | 25% | 20% | 5% | 15% |
 
 ## Industry Detection
 
@@ -123,6 +152,18 @@ context = get_benchmark_context(72, industry="saas")
 - **`INDUSTRY_PROFILES`** — All industry weight profiles and thresholds.
 - **`SUPPORTED_INDUSTRIES`** — Tuple of valid industry keys.
 - **`KNOWN_LIMITATIONS`** — List of documented scoring limitations.
+
+## Known Limitations
+
+1. **Brand correlations are observational** — Brand & Entity has the strongest measured correlations with AI citation rates, but no causal isolation study has been run
+2. **Benchmark percentiles are synthetic** — estimated distributions, not measured from real audit data
+3. **Freshness decay is a step function** — discrete jumps at 30/90/180/365 day boundaries
+4. **Schema quality tiers from single study** — Growth Marshal (n=730); effective composite weight ~2%
+5. **Regex-based entity detection** — ~70% precision for English, limited non-Latin support
+6. **Front-loading uses pattern matching** — not NLP-based position analysis
+7. **Non-promotional tone uses keyword matching** — not ML-based classification
+
+Full details: `KNOWN_LIMITATIONS` constant in the package.
 
 ## License
 
