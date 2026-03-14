@@ -1,8 +1,8 @@
 # aivarize-geo-score
 
-Reference implementation of the Aivarize GEO Scoring methodology — a composite scoring framework for Generative Engine Optimization (GEO).
+Reference implementation of the **Aivarize GEO Scoring Index (AGSI)** — a composite scoring framework for Generative Engine Optimization (GEO).
 
-GEO measures how well a website is optimized for AI-powered search engines (ChatGPT, Perplexity, Google AI Overviews, Gemini, Claude) rather than traditional search rankings. This library calculates a weighted composite GEO Score (0-100) across 5 dimensions with industry-aware weight profiles.
+AGSI measures how well a website is optimized for AI-powered search engines (ChatGPT, Perplexity, Google AI Overviews, Gemini, Claude) rather than traditional search rankings. This library calculates a weighted composite GEO Score (0-100) across 5 dimensions with industry-aware weight profiles.
 
 **Zero dependencies** — stdlib only. Python 3.9+.
 
