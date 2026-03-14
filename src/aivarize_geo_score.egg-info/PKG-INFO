@@ -1,0 +1,57 @@
+Metadata-Version: 2.4
+Name: aivarize-geo-score
+Version: 1.0.0
+Summary: GEO Score — composite scoring framework for Generative Engine Optimization
+Author-email: Aivarize <hello@aivarize.com>
+License-Expression: MIT
+Project-URL: Homepage, https://github.com/Aivarize/aivarize-geo-score
+Project-URL: Documentation, https://aivarize.com/geo-scoring
+Project-URL: Repository, https://github.com/Aivarize/aivarize-geo-score
+Keywords: geo,seo,ai-search,scoring,generative-engine-optimization
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Scientific/Engineering :: Information Analysis
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Dynamic: license-file
+
+# aivarize-geo-score
+
+Reference implementation of the Aivarize GEO Scoring methodology — a composite scoring framework for Generative Engine Optimization (GEO).
+
+## Install
+
+```bash
+pip install aivarize-geo-score
+```
+
+## Quick Start
+
+```python
+from aivarize_geo_score import calculate_geo_score
+
+result = calculate_geo_score({
+    "brand_entity": 72,
+    "content_quality": 65,
+    "ai_citability": 58,
+    "ai_discoverability": 45,
+    "technical_foundation": 80,
+}, industry="saas")
+
+print(result["geo_score"])  # 64
+print(result["label"])      # "Fair"
+```
+
+## License
+
+MIT
