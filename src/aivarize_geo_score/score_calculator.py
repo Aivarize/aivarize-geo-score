@@ -6,7 +6,7 @@ across audit reports, PDF generation, and historical tracking.
 
 # Known limitations of the scoring framework — see docs/SCORING-LIMITATIONS.md
 KNOWN_LIMITATIONS = [
-    "Regex-based entity detection: ~70% precision, limited non-Latin support",
+    "Regex-based entity detection: limited precision, not ML-calibrated",
     "Platform weights are evidence-derived (230+ studies) but not calibrated against own citation outcomes",
     "Benchmark percentiles are synthetic — based on estimated distributions, not measured data",
     "Freshness decay is a step function approximation",
@@ -93,7 +93,7 @@ SCORE_LABELS = [
     (0, "Critical"),
 ]
 
-# 11 industry categories + general default
+# 13 industry categories + general default
 SUPPORTED_INDUSTRIES = (
     "local",
     "ecommerce",
@@ -106,6 +106,8 @@ SUPPORTED_INDUSTRIES = (
     "education",
     "hospitality",
     "real_estate",
+    "wellness",
+    "food_beverage",
 )
 
 INDUSTRY_PROFILES = {
@@ -298,6 +300,40 @@ INDUSTRY_PROFILES = {
             (60, "Good"),
             (45, "Fair"),
             (30, "Poor"),
+            (0, "Critical"),
+        ],
+    },
+    "wellness": {
+        "display_name": "Wellness & Fitness",
+        "weights": {
+            "brand_entity": 0.28,
+            "content_quality": 0.28,
+            "ai_citability": 0.20,
+            "ai_discoverability": 0.12,
+            "technical_foundation": 0.12,
+        },
+        "thresholds": [
+            (75, "Excellent"),
+            (60, "Good"),
+            (45, "Fair"),
+            (30, "Poor"),
+            (0, "Critical"),
+        ],
+    },
+    "food_beverage": {
+        "display_name": "Food & Beverage",
+        "weights": {
+            "brand_entity": 0.30,
+            "content_quality": 0.22,
+            "ai_citability": 0.15,
+            "ai_discoverability": 0.13,
+            "technical_foundation": 0.20,
+        },
+        "thresholds": [
+            (70, "Excellent"),
+            (55, "Good"),
+            (40, "Fair"),
+            (25, "Poor"),
             (0, "Critical"),
         ],
     },
