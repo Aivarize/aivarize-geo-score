@@ -268,6 +268,56 @@ class TestEdgeCases:
         assert result["industry"] == "saas"
         assert any(s.source == "url" for s in result["signals"])
 
+    def test_healthclub_detects_wellness(self):
+        """HealthClub schema type detects wellness (remapped from local)."""
+        page_data = {
+            "structured_data": [{"@type": "HealthClub"}],
+            "text": "Join our fitness classes. Personal training available.",
+        }
+        result = detect_industry(page_data)
+        assert result["industry"] == "wellness"
+        assert result["confidence"] >= 0.5
+
+    def test_recipe_detects_food_beverage(self):
+        """Recipe schema type detects food_beverage."""
+        page_data = {
+            "structured_data": [{"@type": "Recipe"}],
+            "text": "Our craft beer pairs perfectly with this dish.",
+        }
+        result = detect_industry(page_data)
+        assert result["industry"] == "food_beverage"
+        assert result["confidence"] >= 0.5
+
+    def test_wellness_classes_url_pattern(self):
+        """/classes/ URL pattern detects wellness."""
+        page_data = {
+            "url": "https://studio.example.com",
+            "links": ["https://studio.example.com/classes/yoga"],
+            "text": "Yoga and pilates classes for all levels.",
+        }
+        result = detect_industry(page_data)
+        assert result["industry"] == "wellness"
+
+    def test_food_beverage_content_pattern(self):
+        """Craft beer content pattern detects food_beverage."""
+        page_data = {
+            "text": "Our craft beer selection features 20 taps. Happy hour daily.",
+        }
+        result = detect_industry(page_data)
+        assert result["industry"] == "food_beverage"
+
+    def test_wellness_override(self):
+        """Manual override to wellness works."""
+        result = detect_industry({}, override="wellness")
+        assert result["industry"] == "wellness"
+        assert result["confidence"] == 1.0
+
+    def test_food_beverage_override(self):
+        """Manual override to food_beverage works."""
+        result = detect_industry({}, override="food_beverage")
+        assert result["industry"] == "food_beverage"
+        assert result["confidence"] == 1.0
+
     def test_finnish_restaurant_detection(self):
         """Finnish restaurant content should trigger local industry detection."""
         page_data = {
