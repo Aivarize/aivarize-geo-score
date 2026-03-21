@@ -15,12 +15,13 @@ class TestBenchmarkDataIntegrity:
         assert "metadata" in data
 
     def test_all_industries_present(self):
-        """All 11 industries + general are in benchmark data."""
+        """All 13 industries + general are in benchmark data."""
         data = _load_benchmarks()
         expected = [
             "general", "local", "ecommerce", "saas", "publisher",
             "healthcare", "finance", "legal", "professional_services",
-            "education", "hospitality", "real_estate",
+            "education", "hospitality", "real_estate", "wellness",
+            "food_beverage",
         ]
         for industry in expected:
             assert industry in data, f"Missing industry: {industry}"
@@ -124,6 +125,26 @@ class TestGetPercentileSpecificIndustry:
         """Real estate industry has benchmark percentiles."""
         result = get_percentile(50, "real_estate")
         assert isinstance(result, (int, float))
+
+    def test_wellness_at_p50(self):
+        """Wellness p50 = 45, should return percentile 50."""
+        result = get_percentile(45, "wellness")
+        assert result == 50
+
+    def test_food_beverage_at_p50(self):
+        """Food & Beverage p50 = 43, should return percentile 50."""
+        result = get_percentile(43, "food_beverage")
+        assert result == 50
+
+    def test_wellness_benchmark_context(self):
+        """Wellness benchmark context shows correct display name."""
+        result = get_benchmark_context(50, "wellness")
+        assert "Wellness" in result
+
+    def test_food_beverage_benchmark_context(self):
+        """Food & Beverage benchmark context shows correct display name."""
+        result = get_benchmark_context(50, "food_beverage")
+        assert "Food" in result
 
 
 class TestGetPercentileInterpolation:
