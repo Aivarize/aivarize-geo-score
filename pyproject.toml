@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aivarize-geo-score"
-version = "1.0.0"
+version = "1.1.0"
 description = "GEO Score — composite scoring framework for Generative Engine Optimization"
 readme = "README.md"
 license = "MIT"
@@ -52,3 +52,4 @@ fail_under = 90
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "pytest-cov"]
+calibration = ["supabase"]
