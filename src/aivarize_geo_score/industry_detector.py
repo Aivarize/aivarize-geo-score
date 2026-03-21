@@ -1,7 +1,7 @@
 """Industry detection from page data for GEO scoring.
 
 Analyzes structured data, URL patterns, content signals, and TLD
-to classify a website into one of 11 industry categories with a
+to classify a website into one of 13 industry categories with a
 confidence score (0.0-1.0).
 """
 import re
@@ -29,7 +29,7 @@ _SCHEMA_INDUSTRY_MAP = {
     "Store": ("local", 0.35),
     "AutoRepair": ("local", 0.4),
     "Dentist": ("local", 0.35),
-    "HealthClub": ("local", 0.3),
+    "HealthClub": ("wellness", 0.4),
     "HairSalon": ("local", 0.35),
     # Hospitality (remapped from local)
     "Restaurant": ("hospitality", 0.4),
@@ -89,6 +89,19 @@ _SCHEMA_INDUSTRY_MAP = {
     "Course": ("education", 0.3),
     "CollegeOrUniversity": ("education", 0.4),
     "School": ("education", 0.35),
+    # Wellness
+    "ExerciseGym": ("wellness", 0.4),
+    "SportsActivityLocation": ("wellness", 0.3),
+    "DaySpa": ("wellness", 0.35),
+    "BeautySalon": ("wellness", 0.3),
+    "YogaStudio": ("wellness", 0.4),
+    # Food & Beverage
+    "Recipe": ("food_beverage", 0.4),
+    "Menu": ("food_beverage", 0.35),
+    "FoodService": ("food_beverage", 0.35),
+    "Brewery": ("food_beverage", 0.4),
+    "Winery": ("food_beverage", 0.4),
+    "Distillery": ("food_beverage", 0.4),
 }
 
 # URL path patterns -> industry
@@ -139,6 +152,12 @@ _URL_PATTERNS = [
     # Local business URL patterns
     (r"/locations?/|/find-us/|/stores?/", "local", 0.2),
     (r"/contact/", "local", 0.1),
+    # Wellness URL patterns
+    (r"/classes/|/schedule/|/timetable/", "wellness", 0.2),
+    (r"/membership/|/join/", "wellness", 0.15),
+    # Food & Beverage URL patterns
+    (r"/menu/|/our-menu/", "food_beverage", 0.2),
+    (r"/catering/|/private-events/", "food_beverage", 0.15),
 ]
 
 # Content text patterns -> industry (case-insensitive)
@@ -167,6 +186,10 @@ _CONTENT_PATTERNS = [
     (r"speisekarte|reservierung|lieferung|abholung", "local", 0.1),  # German
     (r"carte|r[eé]servation|livraison|commander", "local", 0.1),  # French
     (r"menú|reserva|pedido|entrega", "local", 0.1),  # Spanish
+    # Wellness content patterns
+    (r"workout|fitness|yoga|pilates|personal\s+train", "wellness", 0.15),
+    # Food & Beverage content patterns
+    (r"craft\s+beer|wine\s+list|tasting|brunch|happy\s+hour", "food_beverage", 0.15),
 ]
 
 
