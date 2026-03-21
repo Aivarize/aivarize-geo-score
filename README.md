@@ -76,7 +76,7 @@ from aivarize_geo_score import calculate_geo_score, SUPPORTED_INDUSTRIES
 print(SUPPORTED_INDUSTRIES)
 # ('local', 'ecommerce', 'saas', 'publisher', 'healthcare',
 #  'finance', 'legal', 'professional_services', 'education',
-#  'hospitality', 'real_estate')
+#  'hospitality', 'real_estate', 'wellness', 'food_beverage')
 
 result = calculate_geo_score(scores, industry="healthcare")
 ```
@@ -97,6 +97,8 @@ result = calculate_geo_score(scores, industry="healthcare")
 | Education | 15% | 35% | 23% | 15% | 12% |
 | Hospitality | 32% | 25% | 18% | 13% | 12% |
 | Real Estate | 35% | 25% | 20% | 5% | 15% |
+| Wellness | 28% | 28% | 20% | 12% | 12% |
+| Food & Beverage | 30% | 22% | 15% | 13% | 20% |
 
 ## Industry Detection
 
@@ -112,7 +114,7 @@ page_data = {
 }
 
 result = detect_industry(page_data)
-print(result["industry"])    # "local"
+print(result["industry"])    # "hospitality"
 print(result["confidence"])  # 0.5
 ```
 
@@ -159,7 +161,7 @@ context = get_benchmark_context(72, industry="saas")
 2. **Benchmark percentiles are synthetic** — estimated distributions, not measured from real audit data
 3. **Freshness decay is a step function** — discrete jumps at 30/90/180/365 day boundaries
 4. **Schema quality tiers from single study** — Growth Marshal (n=730); effective composite weight ~2%
-5. **Regex-based entity detection** — ~70% precision for English, limited non-Latin support
+5. **Regex-based entity detection** — limited precision, not ML-calibrated
 6. **Front-loading uses pattern matching** — not NLP-based position analysis
 7. **Non-promotional tone uses keyword matching** — not ML-based classification
 
