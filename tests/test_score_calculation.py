@@ -725,14 +725,14 @@ class TestIndustryProfiles:
     """Test industry profile data structures."""
 
     def test_industry_profiles_exist(self):
-        """INDUSTRY_PROFILES contains all 11 industries plus general."""
+        """INDUSTRY_PROFILES contains all 13 industries plus general."""
         assert "general" in INDUSTRY_PROFILES
-        assert len(INDUSTRY_PROFILES) == 12
+        assert len(INDUSTRY_PROFILES) == 14
 
     def test_supported_industries_tuple(self):
-        """SUPPORTED_INDUSTRIES is a tuple of the 11 industry keys."""
+        """SUPPORTED_INDUSTRIES is a tuple of the 13 industry keys."""
         assert isinstance(SUPPORTED_INDUSTRIES, tuple)
-        assert len(SUPPORTED_INDUSTRIES) == 11
+        assert len(SUPPORTED_INDUSTRIES) == 13
         assert "local" in SUPPORTED_INDUSTRIES
         assert "ecommerce" in SUPPORTED_INDUSTRIES
         assert "saas" in SUPPORTED_INDUSTRIES
@@ -744,6 +744,8 @@ class TestIndustryProfiles:
         assert "education" in SUPPORTED_INDUSTRIES
         assert "hospitality" in SUPPORTED_INDUSTRIES
         assert "real_estate" in SUPPORTED_INDUSTRIES
+        assert "wellness" in SUPPORTED_INDUSTRIES
+        assert "food_beverage" in SUPPORTED_INDUSTRIES
 
     def test_all_profiles_have_weights(self):
         """Every profile has a 'weights' dict with all 5 v4.0 dimensions."""
@@ -839,6 +841,48 @@ class TestIndustryProfiles:
         }
         result = calculate_geo_score(scores, industry="real_estate")
         assert result["industry"] == "real_estate"
+        assert 0 <= result["geo_score"] <= 100
+
+    def test_wellness_profile_exists(self):
+        """Wellness profile has weights summing to 1.0 and thresholds."""
+        profile = INDUSTRY_PROFILES["wellness"]
+        assert profile["display_name"] == "Wellness & Fitness"
+        weights = profile["weights"]
+        assert len(weights) == 5
+        assert abs(sum(weights.values()) - 1.0) < 0.001
+        assert len(profile["thresholds"]) == 5
+        assert profile["thresholds"][0] == (75, "Excellent")
+
+    def test_food_beverage_profile_exists(self):
+        """Food & Beverage profile has weights summing to 1.0 and thresholds."""
+        profile = INDUSTRY_PROFILES["food_beverage"]
+        assert profile["display_name"] == "Food & Beverage"
+        weights = profile["weights"]
+        assert len(weights) == 5
+        assert abs(sum(weights.values()) - 1.0) < 0.001
+        assert len(profile["thresholds"]) == 5
+        assert profile["thresholds"][0] == (70, "Excellent")
+
+    def test_wellness_scoring(self):
+        """Wellness profile produces valid GEO score."""
+        scores = {
+            "ai_citability": 50, "ai_discoverability": 60,
+            "brand_entity": 70, "content_quality": 55,
+            "technical_foundation": 45, "content_richness": 65,
+        }
+        result = calculate_geo_score(scores, industry="wellness")
+        assert result["industry"] == "wellness"
+        assert 0 <= result["geo_score"] <= 100
+
+    def test_food_beverage_scoring(self):
+        """Food & Beverage profile produces valid GEO score."""
+        scores = {
+            "ai_citability": 50, "ai_discoverability": 60,
+            "brand_entity": 70, "content_quality": 55,
+            "technical_foundation": 45, "content_richness": 65,
+        }
+        result = calculate_geo_score(scores, industry="food_beverage")
+        assert result["industry"] == "food_beverage"
         assert 0 <= result["geo_score"] <= 100
 
 
