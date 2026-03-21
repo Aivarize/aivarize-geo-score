@@ -19,7 +19,7 @@ Usage:
     print(result["label"])      # "Fair"
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 from .score_calculator import (
     calculate_geo_score,
@@ -42,6 +42,8 @@ from .calibration import (
     validate_audit_results,
     validate_ai_test_results,
     MINIMUM_PAIRED_RESULTS,
+    fetch_calibration_data,
+    calibrate_from_supabase_data,
 )
 from .industry_detector import detect_industry, IndustrySignal
 
@@ -69,6 +71,8 @@ __all__ = [
     "validate_audit_results",
     "validate_ai_test_results",
     "MINIMUM_PAIRED_RESULTS",
+    "fetch_calibration_data",
+    "calibrate_from_supabase_data",
     # Industry detection
     "detect_industry",
     "IndustrySignal",
