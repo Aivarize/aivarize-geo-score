@@ -1,7 +1,8 @@
-"""Tests for empirical calibration pipeline scaffold."""
+"""Tests for empirical calibration pipeline."""
 import json
 import os
 import pytest
+from unittest.mock import patch, MagicMock
 
 from aivarize_geo_score.calibration import (
     calibrate_from_results,
@@ -9,6 +10,9 @@ from aivarize_geo_score.calibration import (
     load_calibration,
     validate_audit_results,
     validate_ai_test_results,
+    _pearson_correlation,
+    calibrate_from_supabase_data,
+    fetch_calibration_data,
 )
 
 
@@ -169,3 +173,136 @@ class TestCalibrationDataDir:
         from aivarize_geo_score.calibration import DEFAULT_CALIBRATION_PATH
         assert "data" in DEFAULT_CALIBRATION_PATH
         assert DEFAULT_CALIBRATION_PATH.endswith("calibration.json")
+
+
+class TestPearsonCorrelation:
+    """Test _pearson_correlation function."""
+
+    def test_perfect_positive_correlation(self):
+        """Identical lists have correlation 1.0."""
+        x = [1, 2, 3, 4, 5]
+        y = [1, 2, 3, 4, 5]
+        assert _pearson_correlation(x, y) == 1.0
+
+    def test_perfect_negative_correlation(self):
+        """Inverse lists have correlation -1.0."""
+        x = [1, 2, 3, 4, 5]
+        y = [5, 4, 3, 2, 1]
+        assert _pearson_correlation(x, y) == -1.0
+
+    def test_zero_variance_returns_zero(self):
+        """Constant list returns 0.0."""
+        x = [5, 5, 5, 5, 5]
+        y = [1, 2, 3, 4, 5]
+        assert _pearson_correlation(x, y) == 0.0
+
+    def test_short_list_returns_zero(self):
+        """Lists shorter than 3 return 0.0."""
+        assert _pearson_correlation([1, 2], [3, 4]) == 0.0
+        assert _pearson_correlation([1], [2]) == 0.0
+        assert _pearson_correlation([], []) == 0.0
+
+    def test_returns_float(self):
+        """Result is always a float."""
+        result = _pearson_correlation([1, 2, 3], [4, 5, 6])
+        assert isinstance(result, float)
+
+    def test_mismatched_lengths_uses_shorter(self):
+        """Mismatched lengths use the shorter list."""
+        x = [1, 2, 3, 4, 5]
+        y = [1, 2, 3]
+        result = _pearson_correlation(x, y)
+        assert isinstance(result, float)
+        assert result == 1.0  # first 3 of x match y perfectly
+
+
+class TestCalibrateFromSupabaseData:
+    """Test calibrate_from_supabase_data function."""
+
+    def test_insufficient_data(self):
+        """Fewer than 100 rows returns insufficient_data status."""
+        rows = [{"scores": {"ai_citability": 50}, "aio_client_cited": 1}
+                for _ in range(50)]
+        result = calibrate_from_supabase_data(rows)
+        assert result["status"] == "insufficient_data"
+        assert result["row_count"] == 50
+        assert result["correlations"] is None
+
+    def test_sufficient_data_returns_calibrated(self):
+        """100+ rows returns calibrated status with correlations."""
+        rows = []
+        for i in range(120):
+            rows.append({
+                "scores": {
+                    "ai_citability": i,
+                    "ai_discoverability": 50,
+                    "brand_entity": 60,
+                    "content_quality": 70,
+                    "technical_foundation": 40,
+                },
+                "aio_client_cited": i % 5,
+                "ai_mode_client_cited": i % 3,
+                "llm_mentions_total": i % 10,
+            })
+        result = calibrate_from_supabase_data(rows)
+        assert result["status"] == "calibrated"
+        assert result["row_count"] == 120
+        assert result["correlations"] is not None
+        assert "ai_citability" in result["correlations"]
+        assert "brand_entity" in result["correlations"]
+        assert result["weight_adjustments"] is not None
+
+    def test_string_scores_parsed(self):
+        """Scores stored as JSON string are parsed correctly."""
+        rows = []
+        for i in range(100):
+            rows.append({
+                "scores": json.dumps({
+                    "ai_citability": i,
+                    "ai_discoverability": 50,
+                    "brand_entity": 60,
+                    "content_quality": 70,
+                    "technical_foundation": 40,
+                }),
+                "aio_client_cited": i % 5,
+                "ai_mode_client_cited": 0,
+                "llm_mentions_total": 0,
+            })
+        result = calibrate_from_supabase_data(rows)
+        assert result["status"] == "calibrated"
+
+    def test_empty_rows(self):
+        """Empty row list returns insufficient_data."""
+        result = calibrate_from_supabase_data([])
+        assert result["status"] == "insufficient_data"
+        assert result["row_count"] == 0
+
+
+class TestFetchCalibrationData:
+    """Test fetch_calibration_data function."""
+
+    def test_returns_empty_list_when_no_client(self):
+        """Returns empty list when Supabase client is unavailable."""
+        with patch("aivarize_geo_score.calibration._get_calibration_client", return_value=None):
+            result = fetch_calibration_data()
+            assert result == []
+
+    def test_returns_data_from_supabase(self):
+        """Returns data when Supabase client is available."""
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        mock_response.data = [{"id": 1, "scores": {}}]
+        mock_client.table.return_value.select.return_value.gt.return_value.execute.return_value = mock_response
+
+        with patch("aivarize_geo_score.calibration._get_calibration_client", return_value=mock_client):
+            result = fetch_calibration_data()
+            assert result == [{"id": 1, "scores": {}}]
+
+    def test_returns_empty_on_exception(self):
+        """Returns empty list when Supabase query fails."""
+        mock_client = MagicMock()
+        mock_client.table.return_value.select.return_value.gt.return_value.execute.side_effect = Exception("fail")
+
+        with patch("aivarize_geo_score.calibration._get_calibration_client", return_value=mock_client):
+            result = fetch_calibration_data()
+            assert result == []
