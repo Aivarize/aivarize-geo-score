@@ -38,7 +38,7 @@ __all__ = [
     "KNOWN_LIMITATIONS",
 ]
 
-SCORING_VERSION = "4.0"
+SCORING_VERSION = "4.2"
 
 # Official GEO scoring weights (5-dimension model, v4.0)
 # Evidence: 230+ studies, formula: effect_magnitude × study_quality × log10(sample_size)

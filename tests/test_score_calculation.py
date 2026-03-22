@@ -53,12 +53,12 @@ class TestScoringVersion:
     """Test scoring version constants."""
 
     def test_scoring_version_is_3(self):
-        assert SCORING_VERSION == "4.0"
+        assert SCORING_VERSION == "4.2"
 
     def test_result_includes_scoring_version(self):
         scores = {k: 50 for k in V3_WEIGHTS}
         result = calculate_geo_score(scores)
-        assert result["scoring_version"] == "4.0"
+        assert result["scoring_version"] == "4.2"
 
 
 class TestGeoScoreCalculation:
@@ -94,7 +94,7 @@ class TestGeoScoreCalculation:
         result = calculate_geo_score(scores)
         assert "geo_score" in result
         assert 0 <= result["geo_score"] <= 100
-        assert result["scoring_version"] == "4.0"
+        assert result["scoring_version"] == "4.2"
 
     def test_5dim_input_auto_migrates(self):
         """5-dim input (v2) auto-migrates to v4.0."""
@@ -108,7 +108,7 @@ class TestGeoScoreCalculation:
         result = calculate_geo_score(scores)
         assert "geo_score" in result
         assert 0 <= result["geo_score"] <= 100
-        assert result["scoring_version"] == "4.0"
+        assert result["scoring_version"] == "4.2"
 
     def test_perfect_score(self):
         scores = {k: 100 for k in V3_WEIGHTS}
@@ -512,7 +512,7 @@ class TestScoreExplanations:
         """scoring_version key should always be in result."""
         scores = {k: 50 for k in V3_WEIGHTS}
         result = calculate_geo_score(scores)
-        assert result["scoring_version"] == "4.0"
+        assert result["scoring_version"] == "4.2"
 
 
 class TestAutoMigrationChain:
@@ -530,7 +530,7 @@ class TestAutoMigrationChain:
         }
         result = calculate_geo_score(v1)
         assert len(result["weighted"]) == 5
-        assert result["scoring_version"] == "4.0"
+        assert result["scoring_version"] == "4.2"
 
     def test_5dim_to_6dim_auto(self):
         """5-dim (v2) input auto-migrates to v4.0 (5-dim)."""
@@ -566,7 +566,7 @@ class TestAutoMigrationChain:
         }
         # Full chain through v2→v3→v3.2→v4.0 migration
         result = calculate_geo_score(v1)
-        assert result["scoring_version"] == "4.0"
+        assert result["scoring_version"] == "4.2"
         assert 0 <= result["geo_score"] <= 100
 
 
@@ -1302,7 +1302,7 @@ class TestScoringV4:
 
     def test_scoring_version_is_4_0(self):
         from aivarize_geo_score.score_calculator import SCORING_VERSION
-        assert SCORING_VERSION == "4.0"
+        assert SCORING_VERSION == "4.2"
 
     def test_five_dimension_scores_produce_valid_result(self):
         from aivarize_geo_score.score_calculator import calculate_geo_score
@@ -1315,7 +1315,7 @@ class TestScoringV4:
         }
         result = calculate_geo_score(scores)
         assert 0 <= result["geo_score"] <= 100
-        assert result["scoring_version"] == "4.0"
+        assert result["scoring_version"] == "4.2"
         assert len(result["explanations"]) == 5
 
     def test_all_industry_profiles_have_six_dimensions(self):

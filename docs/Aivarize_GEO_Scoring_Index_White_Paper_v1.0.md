@@ -216,7 +216,7 @@ Confidence reflects evidence convergence: **High** means three or more independe
 
 | Sub-Score | Points | Evidence Basis |
 |-----------|:------:|----------------|
-| SSR / Rendering | 35 | Binary gate: 6/8 crawlers cannot render JavaScript [22] |
+| SSR / Rendering | 35 | Binary gate: 5/6 major AI search crawlers cannot render JavaScript [22] |
 | Crawler Access | 35 | 30–40% bypass floor means blocking is leaky [36]; 12 AI crawlers checked |
 | Schema Quality | 15 | Rich (61.7%) > none (59.8%) > generic (41.6%) — generic actively harms [23]; 0/5 AI systems parse JSON-LD [24] |
 | Sitemap / Indexability | 15 | Retrieval rank 7.7x more important than content optimization [1] |
@@ -305,7 +305,7 @@ Seven architectural choices warrant explanation:
 
 5. **Brand Scanner Authority at 55%** reflects the evidence that off-page signals dominate on-page signals by a wide margin in the citation research base [18].
 
-6. **CSR-aware scoring measures what AI crawlers actually see.** When a page relies on client-side JavaScript rendering, AI crawlers receive a near-empty HTML shell. The AGSI scores based on server-side rendered content (`ssr_word_count`), not the full JavaScript-rendered page (`word_count`). This means a page with 2,000 words of JS-rendered content but only 50 words in the raw HTML scores as a 50-word page — reflecting the reality that six of eight major AI crawlers cannot execute JavaScript [22]. The gap between SSR and full content is surfaced as a visibility deficit in qualitative analysis.
+6. **CSR-aware scoring measures what AI crawlers actually see.** When a page relies on client-side JavaScript rendering, AI crawlers receive a near-empty HTML shell. The AGSI scores based on server-side rendered content (`ssr_word_count`), not the full JavaScript-rendered page (`word_count`). This means a page with 2,000 words of JS-rendered content but only 50 words in the raw HTML scores as a 50-word page — reflecting the reality that five of six major AI search crawlers cannot execute JavaScript [22]. The gap between SSR and full content is surfaced as a visibility deficit in qualitative analysis. SSR is scored exclusively in AI Discoverability (35 pts); it was removed from Technical Foundation in v4.2 to eliminate double-counting.
 
 7. **Derived statistics enforce numerical integrity.** All aggregate metrics (total word counts, crawler access ratios, per-page invisibility percentages) are pre-computed once during the scoring phase and carried forward as immutable reference values. Downstream analysis quotes these values rather than independently recalculating — eliminating rounding drift, denominator mismatches, and arithmetic errors across the audit pipeline.
 
