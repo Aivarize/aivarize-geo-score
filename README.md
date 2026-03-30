@@ -30,16 +30,16 @@ print(result["label"])      # "Fair"
 print(result["weighted"])   # per-dimension weighted contributions
 ```
 
-## Scoring Model (v4.0)
+## Scoring Model (v5.0)
 
 The GEO Score is a weighted composite across 5 dimensions, calibrated from 230+ empirical studies:
 
 | Dimension | Weight | What it measures |
 |-----------|--------|------------------|
 | Brand & Entity | 30% | Entity recognition, brand mentions, cross-platform authority |
-| Content Quality | 24% | E-E-A-T signals, expertise, original research, freshness |
+| Content Quality | 25% | E-E-A-T signals, expertise, original research, freshness |
 | AI Citability | 23% | Passage structure, factual density, quotability |
-| AI Discoverability | 13% | AI crawler access, sitemap, SSR, schema quality |
+| AI Discoverability | 12% | AI crawler access, sitemap, SSR, schema quality |
 | Technical Foundation | 10% | Crawlability, security, internal linking |
 
 ### Score Labels
@@ -58,11 +58,11 @@ Note: Industry-specific thresholds may differ (e.g., local businesses: 70+ = Exc
 
 **Brand & Entity (30%)** — Does the brand exist as a recognized entity? Scores platform presence (YouTube, Reddit, Wikipedia, LinkedIn, G2, X, Crunchbase, GitHub), Wikidata/Knowledge Panel signals, and on-page Organization schema. Strongest measured correlation with AI citation rates.
 
-**Content Quality (24%)** — Sub-scores: Freshness (30%), Expertise (20%), Trustworthiness (18%), Structure (12%), Non-Promotional Tone (8%), Content Richness (7%), AI Content Risk (5%). Includes author entity signals and content freshness decay.
+**Content Quality (25%)** — 12 sub-scores: Freshness (22), Visible Freshness (5), Expertise (15), Information Gain (8), Semantic Completeness (8), Trustworthiness (12), Structure (8), Non-Promotional Tone (6), Content Richness (8), Terminology Precision (3), Audience Specificity (3), Podcast/Transcript (2). Industry-aware freshness decay.
 
-**AI Citability (23%)** — Can AI models extract and quote passages? Sub-scores: Passage Citability (65%), Heading Structure (15%), Content Depth (10%), Front-Loading (10%). Evaluates answer-first structure, factual density, and self-contained quotable blocks.
+**AI Citability (23%)** — Can AI models extract and quote passages? Sub-scores: Passage Citability (30), Content Depth (10), Heading Structure (10), Front-Loading (15), Source Citations (15), Content Modularity (10), Conversational Patterns (10). H2 answer capsule detection.
 
-**AI Discoverability (13%)** — Can AI crawlers find and parse the content? Sub-scores: SSR/Rendering (35%), Crawler Access (35%), Schema Quality (15%), Sitemap/Indexability (15%), plus llms.txt bonus (+3). Checks access for GPTBot, ClaudeBot, PerplexityBot, Google-Extended, OAI-SearchBot, ChatGPT-User.
+**AI Discoverability (12%)** — Can AI crawlers find and parse the content? Sub-scores: SSR/Rendering (35%), Crawler Access (35%), Schema Quality (15%), Sitemap/Indexability (15%). llms.txt removed from scoring (DEAD-01). Checks access for GPTBot, ClaudeBot, PerplexityBot, Google-Extended, OAI-SearchBot, ChatGPT-User.
 
 **Technical Foundation (10%)** — Floor constraint: severe failures cap citation potential. Sub-scores: Crawlability (35%), SSR (25%), Internal Linking (20%), Web Quality (10%), Page Speed (10%).
 

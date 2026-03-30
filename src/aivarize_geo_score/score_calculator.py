@@ -6,15 +6,17 @@ across audit reports, PDF generation, and historical tracking.
 
 # Known limitations of the scoring framework — see docs/SCORING-LIMITATIONS.md
 KNOWN_LIMITATIONS = [
-    "Regex-based entity detection: limited precision, not ML-calibrated",
+    "Regex-based entity detection: limited precision, not ML-calibrated; limited non-Latin support",
     "Platform weights are evidence-derived (230+ studies) but not calibrated against own citation outcomes",
     "Benchmark percentiles are synthetic — based on estimated distributions, not measured data",
-    "Freshness decay is a step function approximation",
+    "Freshness decay uses industry-aware step function, not continuous ML-predicted curve",
     "Schema quality tiers (rich/generic/none) based on single study (Growth Marshal, 730 citations)",
     "Brand & Entity correlations are strong (ρ=0.664-0.737) but entirely correlational — no causal isolation",
-    "Content front-loading detection uses simple pattern matching, not NLP-based position analysis",
+    "Content front-loading detection uses pattern matching with H2 answer capsule detection, not full NLP",
     "Non-promotional tone uses keyword matching, not ML-based sentiment/tone classification",
     "Single-page quick audit has lower confidence than multi-page full audit",
+    "Information gain scoring detects originality signals but cannot compare against competitor content at scale",
+    "Semantic similarity to fan-out sub-queries requires embedding model (not included in base scoring)",
 ]
 
 import json
@@ -38,16 +40,28 @@ __all__ = [
     "KNOWN_LIMITATIONS",
 ]
 
-SCORING_VERSION = "4.2"
+SCORING_VERSION = "5.0"
 
-# Official GEO scoring weights (5-dimension model, v4.0)
-# Evidence: 230+ studies, formula: effect_magnitude × study_quality × log10(sample_size)
+# Official GEO scoring weights (5-dimension model, v5.0)
+# Evidence: 230+ studies across 6 research papers (R1-R6)
+# Formula: evidence_magnitude × study_quality × log10(sample_size)
+#
+# Recalibration evidence (v5.0):
+#   brand_entity:       ρ=0.664-0.737 (Ahrefs 75K), earned media 70-92% (Chen, U of Toronto),
+#                       entity-level 2-4x page-level, referring domains #1 SHAP (SE Ranking 129K)
+#   content_quality:    OR=4.2 (GEO-16), E-E-A-T +30.64% (Semrush 304K), freshness 3x-3.2x,
+#                       Q&A format +25.45%, section structure +22.91%
+#   ai_citability:      44.2% front-loading (Indig 18K, p=0.0), source citations +37-40%
+#                       (Aggarwal KDD + GEO-16 r=0.61), statistics +30.6% (KDD)
+#   ai_discoverability: structured data 3.2x but proxy for site quality (Growth Marshal),
+#                       JS rendering 6/8 crawlers can't execute (Vercel/MERJ)
+#   technical_foundation: page speed FCP<0.4s = 3x citations, floor constraint model
 WEIGHTS = {
-    "brand_entity": 0.30,        # ρ=0.664-0.737, strongest measured correlations
-    "content_quality": 0.24,     # OR=4.2 + causal freshness (22% + 2% absorbed richness)
-    "ai_citability": 0.23,       # Passage structure, 44.2% front-loading signal
-    "ai_discoverability": 0.13,  # Retrieval 7.7x but schema near-null
-    "technical_foundation": 0.10, # Floor constraint model (ρ=-0.12 to -0.18)
+    "brand_entity": 0.30,
+    "content_quality": 0.25,
+    "ai_citability": 0.23,
+    "ai_discoverability": 0.12,
+    "technical_foundation": 0.10,
 }
 
 # Industry alias map — historical keys that resolve to current industry keys
@@ -120,9 +134,9 @@ INDUSTRY_PROFILES = {
         "display_name": "Local Business",
         "weights": {
             "brand_entity": 0.30,
-            "content_quality": 0.20,  # 18% + 2% absorbed richness
+            "content_quality": 0.21,  # +1% CQ: NAP/review content critical
             "ai_citability": 0.12,
-            "ai_discoverability": 0.15,
+            "ai_discoverability": 0.14,  # -1% AD: proxy signal
             "technical_foundation": 0.23,  # local needs maps/NAP/technical
         },
         "thresholds": [
@@ -137,9 +151,9 @@ INDUSTRY_PROFILES = {
         "display_name": "E-commerce",
         "weights": {
             "brand_entity": 0.15,
-            "content_quality": 0.22,  # 20% + 2% absorbed
+            "content_quality": 0.23,  # +1% CQ: intent alignment dominant [R4], freshness critical
             "ai_citability": 0.18,
-            "ai_discoverability": 0.15,
+            "ai_discoverability": 0.14,  # -1% AD: proxy signal
             "technical_foundation": 0.30,  # speed/CWV critical for ecom
         },
         "thresholds": [
@@ -154,9 +168,9 @@ INDUSTRY_PROFILES = {
         "display_name": "SaaS / B2B Tech",
         "weights": {
             "brand_entity": 0.25,
-            "content_quality": 0.24,  # 22% + 2%
+            "content_quality": 0.25,  # +1% CQ: Reddit+G2 led all sources, content differentiation key
             "ai_citability": 0.25,
-            "ai_discoverability": 0.13,
+            "ai_discoverability": 0.12,  # -1% AD: proxy signal
             "technical_foundation": 0.13,
         },
         "thresholds": [
@@ -171,9 +185,9 @@ INDUSTRY_PROFILES = {
         "display_name": "Publisher / Media",
         "weights": {
             "brand_entity": 0.25,
-            "content_quality": 0.28,  # 25% + 3%
+            "content_quality": 0.29,  # +1% CQ: earned media most relevant
             "ai_citability": 0.25,
-            "ai_discoverability": 0.12,
+            "ai_discoverability": 0.11,  # -1% AD: proxy signal
             "technical_foundation": 0.10,
         },
         "thresholds": [
@@ -188,9 +202,9 @@ INDUSTRY_PROFILES = {
         "display_name": "Healthcare (YMYL)",
         "weights": {
             "brand_entity": 0.30,
-            "content_quality": 0.30,  # 28% + 2%
+            "content_quality": 0.31,  # +1% CQ: only 24% of citations from top-10 organic [R4]
             "ai_citability": 0.15,
-            "ai_discoverability": 0.13,
+            "ai_discoverability": 0.12,  # -1% AD: proxy signal
             "technical_foundation": 0.12,
         },
         "thresholds": [
@@ -205,9 +219,9 @@ INDUSTRY_PROFILES = {
         "display_name": "Finance (YMYL)",
         "weights": {
             "brand_entity": 0.28,
-            "content_quality": 0.32,  # 30% + 2%
+            "content_quality": 0.33,  # +1% CQ: institutional trust dominant, YMYL pattern
             "ai_citability": 0.15,
-            "ai_discoverability": 0.13,
+            "ai_discoverability": 0.12,  # -1% AD: proxy signal
             "technical_foundation": 0.12,
         },
         "thresholds": [
@@ -222,9 +236,9 @@ INDUSTRY_PROFILES = {
         "display_name": "Legal (YMYL)",
         "weights": {
             "brand_entity": 0.25,
-            "content_quality": 0.30,  # 28% + 2%
+            "content_quality": 0.31,  # +1% CQ: institutional trust dominant
             "ai_citability": 0.18,
-            "ai_discoverability": 0.12,
+            "ai_discoverability": 0.11,  # -1% AD: proxy signal
             "technical_foundation": 0.15,
         },
         "thresholds": [
@@ -239,9 +253,9 @@ INDUSTRY_PROFILES = {
         "display_name": "Professional Services",
         "weights": {
             "brand_entity": 0.30,
-            "content_quality": 0.30,  # 25% + 5%
+            "content_quality": 0.31,  # +1% CQ: expertise signals critical
             "ai_citability": 0.15,
-            "ai_discoverability": 0.10,
+            "ai_discoverability": 0.09,  # -1% AD: proxy signal
             "technical_foundation": 0.15,
         },
         "thresholds": [
@@ -256,9 +270,9 @@ INDUSTRY_PROFILES = {
         "display_name": "Education",
         "weights": {
             "brand_entity": 0.15,
-            "content_quality": 0.35,  # 28% + 7%
+            "content_quality": 0.36,  # +1% CQ: content depth critical for education
             "ai_citability": 0.23,
-            "ai_discoverability": 0.15,
+            "ai_discoverability": 0.14,  # -1% AD: proxy signal
             "technical_foundation": 0.12,
         },
         "thresholds": [
@@ -273,9 +287,9 @@ INDUSTRY_PROFILES = {
         "display_name": "Hospitality & Tourism",
         "weights": {
             "brand_entity": 0.32,
-            "content_quality": 0.25,  # 18% + 7%
+            "content_quality": 0.26,  # +1% CQ: experience signals critical
             "ai_citability": 0.18,
-            "ai_discoverability": 0.13,
+            "ai_discoverability": 0.12,  # -1% AD: proxy signal
             "technical_foundation": 0.12,
         },
         "thresholds": [
@@ -290,9 +304,9 @@ INDUSTRY_PROFILES = {
         "display_name": "Real Estate",
         "weights": {
             "brand_entity": 0.35,
-            "content_quality": 0.25,  # 22% + 3%
+            "content_quality": 0.26,  # +1% CQ: local market content critical
             "ai_citability": 0.20,
-            "ai_discoverability": 0.05,
+            "ai_discoverability": 0.04,  # -1% AD: proxy signal
             "technical_foundation": 0.15,
         },
         "thresholds": [
@@ -307,9 +321,9 @@ INDUSTRY_PROFILES = {
         "display_name": "Wellness & Fitness",
         "weights": {
             "brand_entity": 0.28,
-            "content_quality": 0.28,
+            "content_quality": 0.29,  # +1% CQ: E-E-A-T trust signals critical
             "ai_citability": 0.20,
-            "ai_discoverability": 0.12,
+            "ai_discoverability": 0.11,  # -1% AD: proxy signal
             "technical_foundation": 0.12,
         },
         "thresholds": [
@@ -324,9 +338,9 @@ INDUSTRY_PROFILES = {
         "display_name": "Food & Beverage",
         "weights": {
             "brand_entity": 0.30,
-            "content_quality": 0.22,
+            "content_quality": 0.23,  # +1% CQ: freshness critical for F&B
             "ai_citability": 0.15,
-            "ai_discoverability": 0.13,
+            "ai_discoverability": 0.12,  # -1% AD: proxy signal
             "technical_foundation": 0.20,
         },
         "thresholds": [

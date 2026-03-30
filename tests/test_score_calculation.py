@@ -20,12 +20,12 @@ from aivarize_geo_score.score_calculator import (
 )
 
 
-# v4.0 5-dimension weights
+# v5.0 5-dimension weights
 V4_WEIGHTS = {
     "brand_entity": 0.30,
-    "content_quality": 0.24,
+    "content_quality": 0.25,
     "ai_citability": 0.23,
-    "ai_discoverability": 0.13,
+    "ai_discoverability": 0.12,
     "technical_foundation": 0.10,
 }
 
@@ -53,12 +53,12 @@ class TestScoringVersion:
     """Test scoring version constants."""
 
     def test_scoring_version_is_3(self):
-        assert SCORING_VERSION == "4.2"
+        assert SCORING_VERSION == "5.0"
 
     def test_result_includes_scoring_version(self):
         scores = {k: 50 for k in V3_WEIGHTS}
         result = calculate_geo_score(scores)
-        assert result["scoring_version"] == "4.2"
+        assert result["scoring_version"] == "5.0"
 
 
 class TestGeoScoreCalculation:
@@ -76,10 +76,10 @@ class TestGeoScoreCalculation:
         }
         result = calculate_geo_score(scores)
         # After migration: content_quality = round(75*0.92 + 65*0.08) = round(69+5.2) = round(74.2) = 74
-        # geo_score = round(80*0.23 + 70*0.13 + 60*0.30 + 74*0.24 + 85*0.10)
-        # = round(18.4 + 9.1 + 18.0 + 17.76 + 8.5) = round(71.76) = 72
+        # geo_score = round(80*0.23 + 70*0.12 + 60*0.30 + 74*0.25 + 85*0.10)
+        # = round(18.4 + 8.4 + 18.0 + 18.5 + 8.5) = round(71.8) = 72
         assert result["geo_score"] == 72
-        assert abs(result["raw_score"] - 71.76) < 0.01
+        assert abs(result["raw_score"] - 71.8) < 0.01
 
     def test_6dim_input_auto_migrates(self):
         """6-dim input (v1) auto-migrates through v2 to v4.0."""
@@ -94,7 +94,7 @@ class TestGeoScoreCalculation:
         result = calculate_geo_score(scores)
         assert "geo_score" in result
         assert 0 <= result["geo_score"] <= 100
-        assert result["scoring_version"] == "4.2"
+        assert result["scoring_version"] == "5.0"
 
     def test_5dim_input_auto_migrates(self):
         """5-dim input (v2) auto-migrates to v4.0."""
@@ -108,7 +108,7 @@ class TestGeoScoreCalculation:
         result = calculate_geo_score(scores)
         assert "geo_score" in result
         assert 0 <= result["geo_score"] <= 100
-        assert result["scoring_version"] == "4.2"
+        assert result["scoring_version"] == "5.0"
 
     def test_perfect_score(self):
         scores = {k: 100 for k in V3_WEIGHTS}
@@ -132,11 +132,11 @@ class TestGeoScoreCalculation:
         }
         result = calculate_geo_score(scores)
         # After migration: content_quality = round(75*0.92 + 65*0.08) = 74
-        # v4.0 weights: ai_citability=0.23, ai_discoverability=0.13, brand_entity=0.30, content_quality=0.24, technical_foundation=0.10
+        # v5.0 weights: ai_citability=0.23, ai_discoverability=0.12, brand_entity=0.30, content_quality=0.25, technical_foundation=0.10
         assert abs(result["weighted"]["ai_citability"] - 18.4) < 0.01
-        assert abs(result["weighted"]["ai_discoverability"] - 9.1) < 0.01
+        assert abs(result["weighted"]["ai_discoverability"] - 8.4) < 0.01
         assert abs(result["weighted"]["brand_entity"] - 18.0) < 0.01
-        assert abs(result["weighted"]["content_quality"] - 17.76) < 0.01
+        assert abs(result["weighted"]["content_quality"] - 18.5) < 0.01
         assert abs(result["weighted"]["technical_foundation"] - 8.5) < 0.01
         assert "content_richness" not in result["weighted"]
 
@@ -223,8 +223,8 @@ class TestNewWeights:
         }
         result = calculate_geo_score(scores)
         # After migration: content_quality = round(75*0.92 + 65*0.08) = 74
-        # 80*0.23=18.4, 70*0.13=9.1, 60*0.30=18.0, 74*0.24=17.76, 85*0.10=8.5
-        # total = 71.76 → 72
+        # 80*0.23=18.4, 70*0.12=8.4, 60*0.30=18.0, 74*0.25=18.5, 85*0.10=8.5
+        # total = 71.8 → 72
         assert result["geo_score"] == 72
 
     def test_v1_weights_preserved(self):
@@ -512,7 +512,7 @@ class TestScoreExplanations:
         """scoring_version key should always be in result."""
         scores = {k: 50 for k in V3_WEIGHTS}
         result = calculate_geo_score(scores)
-        assert result["scoring_version"] == "4.2"
+        assert result["scoring_version"] == "5.0"
 
 
 class TestAutoMigrationChain:
@@ -530,7 +530,7 @@ class TestAutoMigrationChain:
         }
         result = calculate_geo_score(v1)
         assert len(result["weighted"]) == 5
-        assert result["scoring_version"] == "4.2"
+        assert result["scoring_version"] == "5.0"
 
     def test_5dim_to_6dim_auto(self):
         """5-dim (v2) input auto-migrates to v4.0 (5-dim)."""
@@ -566,7 +566,7 @@ class TestAutoMigrationChain:
         }
         # Full chain through v2→v3→v3.2→v4.0 migration
         result = calculate_geo_score(v1)
-        assert result["scoring_version"] == "4.2"
+        assert result["scoring_version"] == "5.0"
         assert 0 <= result["geo_score"] <= 100
 
 
@@ -650,8 +650,8 @@ class TestScoreRecalculation:
         assert len(result["scores"]) == 5
         # v3(7)→v3.2(6): ai_discoverability = round(0.75*70 + 0.25*50) = 65
         # v3.2(6)→v4.0(5): content_quality = round(75*0.92 + 65*0.08) = round(69+5.2) = 74
-        # geo = round(80*0.23 + 65*0.13 + 60*0.30 + 74*0.24 + 85*0.10)
-        #     = round(18.4 + 8.45 + 18.0 + 17.76 + 8.5) = round(71.11) = 71
+        # geo = round(80*0.23 + 65*0.12 + 60*0.30 + 74*0.25 + 85*0.10)
+        #     = round(18.4 + 7.8 + 18.0 + 18.5 + 8.5) = round(71.2) = 71
         assert result["geo_score"] == 71
 
 
@@ -987,9 +987,9 @@ class TestIndustryAwareScoring:
         scores = {k: 100 for k in V4_WEIGHTS}
         result = calculate_geo_score(scores, industry="local")
         assert result["geo_score"] == 100
-        # local brand_entity=0.30, ai_discoverability=0.15
+        # local brand_entity=0.30, ai_discoverability=0.14
         assert abs(result["weighted"]["brand_entity"] - 30.0) < 0.01
-        assert abs(result["weighted"]["ai_discoverability"] - 15.0) < 0.01
+        assert abs(result["weighted"]["ai_discoverability"] - 14.0) < 0.01
 
 
 class TestAutoMigrate:
@@ -1274,7 +1274,7 @@ class TestKnownLimitations:
     def test_known_limitations_exists(self):
         """KNOWN_LIMITATIONS should be a non-empty list."""
         assert isinstance(KNOWN_LIMITATIONS, list)
-        assert len(KNOWN_LIMITATIONS) == 9
+        assert len(KNOWN_LIMITATIONS) == 11
 
     def test_all_limitations_are_strings(self):
         """Each limitation should be a non-empty string."""
@@ -1296,13 +1296,13 @@ class TestScoringV4:
         assert "structured_data" not in WEIGHTS
         assert "content_richness" not in WEIGHTS
 
-    def test_ai_discoverability_weight_is_13(self):
+    def test_ai_discoverability_weight_is_12(self):
         from aivarize_geo_score.score_calculator import WEIGHTS
-        assert WEIGHTS["ai_discoverability"] == 0.13
+        assert WEIGHTS["ai_discoverability"] == 0.12
 
-    def test_scoring_version_is_4_0(self):
+    def test_scoring_version_is_5_0(self):
         from aivarize_geo_score.score_calculator import SCORING_VERSION
-        assert SCORING_VERSION == "4.2"
+        assert SCORING_VERSION == "5.0"
 
     def test_five_dimension_scores_produce_valid_result(self):
         from aivarize_geo_score.score_calculator import calculate_geo_score
@@ -1315,7 +1315,7 @@ class TestScoringV4:
         }
         result = calculate_geo_score(scores)
         assert 0 <= result["geo_score"] <= 100
-        assert result["scoring_version"] == "4.2"
+        assert result["scoring_version"] == "5.0"
         assert len(result["explanations"]) == 5
 
     def test_all_industry_profiles_have_six_dimensions(self):

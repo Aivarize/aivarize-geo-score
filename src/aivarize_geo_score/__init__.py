@@ -19,7 +19,7 @@ Usage:
     print(result["label"])      # "Fair"
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 from .score_calculator import (
     calculate_geo_score,
